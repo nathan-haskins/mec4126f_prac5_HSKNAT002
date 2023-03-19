@@ -12,15 +12,18 @@
 // GLOBAL VARIABLES ----------------------------------------------------------|
 
 uint8_t count = 0; // Q1.5. declare and initialise the count variable to 0
+uint8_t SW3_count = 0; // Q2 declare and initialise the SW3_count variable to 0
+uint8_t FLAG = 0;
 
 // FUNCTION DECLARATIONS -----------------------------------------------------|
 
-void main(void);                        //COMPULSORY
+void main(void);                        //  COMPULSORY
 void display_on_LCD(uint8_t value); 	//  Question 1.1.
 void init_LEDs(void);  					//  Question 1.2.
 void display_on_LEDs(uint8_t value);	//  Question 1.3.
 void init_switches(void);				//  Question 1.4.
 void init_external_interrupts(void);    //  Question 2.1.
+void EXTI2_3_IRQHandler(void); 			// 	Question 2
 
 // MAIN FUNCTION -------------------------------------------------------------|
 
@@ -29,26 +32,9 @@ void main(void)
 	init_LEDs();
 	init_switches();
 	init_LCD();
-	display_on_LCD(count); // display the initial value of count on the LCD on RESET
+	init_external_interrupts();
 
-	while(1)
-	{
-		if(!(GPIOA->IDR & GPIO_IDR_1)) // check if SW1 is pressed
-		{
-			while((GPIOA->IDR & GPIO_IDR_1) == 0); // wait until button SW1 is released
-			count += 1;
-			display_on_LCD(count);
-			display_on_LEDs(count);
-		}
-
-		if(!(GPIOA->IDR & GPIO_IDR_2)) // check if SW2 is pressed
-		{
-			while((GPIOA->IDR & GPIO_IDR_2) == 0); // wait until button SW1 is released
-			count -= 1;
-			display_on_LCD(count);
-			display_on_LEDs(count);
-		}
-	}
+	while(1);
 
 }
 
@@ -102,4 +88,59 @@ void init_external_interrupts(void){
 	EXTI -> FTSR |= EXTI_FTSR_TR3; // falling edge trigger for PA3
 
 	NVIC_EnableIRQ(EXTI2_3_IRQn);
+}
+
+// Question 2
+void EXTI2_3_IRQHandler(void){
+
+    // If PA3 is connected to EXTI line
+    if(EXTI->PR &= EXTI_PR_PR3){
+        delay(40000);
+        SW3_count = 1;
+
+        switch(SW3_count){
+            case 1:
+            case 3: {
+            	count = 0; // reset count value
+            	display_on_LCD(count);
+            	display_on_LEDs(count);
+
+                while(1){
+                	if (!(GPIOA->IDR & GPIO_IDR_1)) {
+                		while((GPIOA->IDR & GPIO_IDR_1) == 0);// wait until button SW1 is released
+                        count += 1;
+                        display_on_LCD(count);
+                        display_on_LEDs(count);}
+
+                	else if (!(GPIOA->IDR & GPIO_IDR_2)) {
+                		while((GPIOA->IDR & GPIO_IDR_2)==0);// wait until button SW2 is released
+                        count -= 1;
+                        display_on_LCD(count);
+                        display_on_LEDs(count);}
+
+                    if(!(GPIOA->IDR & GPIO_IDR_3)){
+                        while((GPIOA->IDR & GPIO_IDR_3)==0); // wait until button SW3 is released
+                        SW3_count += 1;
+                        break;
+                    }
+                }
+            }
+
+            case 0:
+            case 2: {
+                lcd_command(CLEAR);
+                display_on_LEDs(0);
+                if(!(GPIOA->IDR & GPIO_IDR_3)){
+                    while((GPIOA->IDR & GPIO_IDR_3) == 0);
+                    SW3_count += 1;
+
+                    break;
+            }
+            default: {
+                break;
+            }
+        }
+    }
+    EXTI -> PR |= EXTI_PR_PR3; // clear the interrupt pending by writing a '1' PR3 for PA3. (interrupt completed...)
+  }
 }
