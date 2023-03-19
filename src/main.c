@@ -20,6 +20,7 @@ void display_on_LCD(uint8_t value); 	//  Question 1.1.
 void init_LEDs(void);  					//  Question 1.2.
 void display_on_LEDs(uint8_t value);	//  Question 1.3.
 void init_switches(void);				//  Question 1.4.
+void init_external_interrupts(void);    //  Question 2.1.
 
 // MAIN FUNCTION -------------------------------------------------------------|
 
@@ -85,8 +86,20 @@ void display_on_LEDs(uint8_t value){
 void init_switches(void){
 	RCC -> AHBENR |= RCC_AHBENR_GPIOAEN; // enable clock for port A - switches
 	GPIOA-> MODER &= ~(GPIO_MODER_MODER1|
-					   GPIO_MODER_MODER2); //set pins PA0 (SW0) and PA1 (SW1) to GPIO inputs
+					   GPIO_MODER_MODER2|
+	  	  	  	  	   GPIO_MODER_MODER3); // set pins PA0 (SW0) and PA1 (SW1) to GPIO inputs (not strictly nessasary but included for completeness and readability).
 	GPIOA->PUPDR |= (GPIO_PUPDR_PUPDR1_0|
-					 GPIO_PUPDR_PUPDR2_0); // enable pull-up resistors: switches HIGH when open.
+					 GPIO_PUPDR_PUPDR2_0|
+	 	 	 	 	 GPIO_PUPDR_PUPDR3_0); // enable pull-up resistors: switches HIGH when open.
+}
 
+// Question 2.1.
+void init_external_interrupts(void){
+	RCC -> APB2ENR |= RCC_APB2ENR_SYSCFGCOMPEN; // enable clock for sysconfig
+
+	SYSCFG -> EXTICR[0] |= SYSCFG_EXTICR1_EXTI3_PA; // route PA3 to EXTI1 register (which is at position zero in EXTICR[x])
+	EXTI-> IMR |= EXTI_IMR_MR3; // unmask the line (interrupt) connected to PA3
+	EXTI -> FTSR |= EXTI_FTSR_TR3; // falling edge trigger for PA3
+
+	NVIC_EnableIRQ(EXTI2_3_IRQn);
 }
