@@ -14,7 +14,8 @@
 // FUNCTION DECLARATIONS -----------------------------------------------------|
 
 void main(void);                                                   //COMPULSORY
-void display_on_LCD(uint8_t value); //  Question 1.1.
+void display_on_LCD(uint8_t value); 	//  Question 1.1.
+void init_LEDs(void);  					//  Question 1.2.
 
 // MAIN FUNCTION -------------------------------------------------------------|
 
@@ -33,4 +34,18 @@ void display_on_LCD(uint8_t value){
 	 sprintf(buffer, "%u", value); // Convert the value to a string using %u for unsigned decimal integer
 	 lcd_command(CLEAR);
 	 lcd_putstring(buffer);
+}
+
+// Question 1.2. GPIOB to use LEDs as OUTPUTS
+void init_LEDs(void){
+	RCC -> AHBENR |= RCC_AHBENR_GPIOBEN; // enable clock for port B -LEDS
+	GPIOB -> MODER |= (GPIO_MODER_MODER0_0|
+					   GPIO_MODER_MODER1_0|
+					   GPIO_MODER_MODER2_0|
+					   GPIO_MODER_MODER3_0|
+					   GPIO_MODER_MODER4_0|
+					   GPIO_MODER_MODER5_0|
+					   GPIO_MODER_MODER6_0|
+					   GPIO_MODER_MODER7_0); // set pins PB0-PB7 as output
+
 }
