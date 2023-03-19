@@ -16,6 +16,7 @@
 void main(void);                                                   //COMPULSORY
 void display_on_LCD(uint8_t value); 	//  Question 1.1.
 void init_LEDs(void);  					//  Question 1.2.
+void display_on_LEDs(uint8_t value);	//  Question 1.3.
 
 // MAIN FUNCTION -------------------------------------------------------------|
 
@@ -36,7 +37,7 @@ void display_on_LCD(uint8_t value){
 	 lcd_putstring(buffer);
 }
 
-// Question 1.2. GPIOB to use LEDs as OUTPUTS
+// Question 1.2.
 void init_LEDs(void){
 	RCC -> AHBENR |= RCC_AHBENR_GPIOBEN; // enable clock for port B -LEDS
 	GPIOB -> MODER |= (GPIO_MODER_MODER0_0|
@@ -48,4 +49,10 @@ void init_LEDs(void){
 					   GPIO_MODER_MODER6_0|
 					   GPIO_MODER_MODER7_0); // set pins PB0-PB7 as output
 
+}
+
+// Question 1.3.
+void display_on_LEDs(uint8_t value){
+	GPIOB -> ODR &= ~(GPIOB -> ODR); // resets the pins of current ODR in port B
+	GPIOB -> ODR = value;
 }
