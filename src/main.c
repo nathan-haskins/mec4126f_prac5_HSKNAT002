@@ -11,6 +11,8 @@
 
 // GLOBAL VARIABLES ----------------------------------------------------------|
 
+uint8_t count = 0; // Q1.5. declare and initialise the count variable to 0
+
 // FUNCTION DECLARATIONS -----------------------------------------------------|
 
 void main(void);                        //COMPULSORY
@@ -23,8 +25,29 @@ void init_switches(void);				//  Question 1.4.
 
 void main(void)
 {
+	init_LEDs();
+	init_switches();
+	init_LCD();
+	display_on_LCD(count); // display the initial value of count on the LCD on RESET
 
-	while(1);
+	while(1)
+	{
+		if(!(GPIOA->IDR & GPIO_IDR_1)) // check if SW1 is pressed
+		{
+			while((GPIOA->IDR & GPIO_IDR_1) == 0); // wait until button SW1 is released
+			count += 1;
+			display_on_LCD(count);
+			display_on_LEDs(count);
+		}
+
+		if(!(GPIOA->IDR & GPIO_IDR_2)) // check if SW2 is pressed
+		{
+			while((GPIOA->IDR & GPIO_IDR_2) == 0); // wait until button SW1 is released
+			count -= 1;
+			display_on_LCD(count);
+			display_on_LEDs(count);
+		}
+	}
 
 }
 
